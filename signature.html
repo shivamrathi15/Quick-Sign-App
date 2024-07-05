@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta tags for character set and responsive design -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title of the web page -->
+    <title>Quick Sign App</title>
+    <!-- Link to Tailwind CSS for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Custom styling for the canvas */
+        .canvas {
+            border: 2px solid black;
+        }
+    </style>
+</head>
+<body class="bg-gray-300 flex items-center justify-center min-h-screen">
+    <!-- Main container for the app -->
+    <div class="bg-white shadow-lg rounded-lg p-8">
+        <!-- Heading for the app -->
+        <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Quick Sign App By Shivam</h1>
+        <!-- Container for input controls with grid layout -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <!-- Color picker for text color -->
+            <div class="flex flex-col items-center">
+                <label for="colorPicker" class="text-gray-700 mb-2">Text Color Picker</label>
+                <input class="form-control w-32" type="color" id="colorPicker"/>
+            </div>
+            <!-- Color picker for canvas background color -->
+            <div class="flex flex-col items-center">
+                <label for="canvasColor" class="text-gray-700 mb-2">Background</label>
+                <input class="form-control w-32" type="color" id="canvasColor"/>
+            </div>
+            <!-- Dropdown for selecting font size -->
+            <div class="flex flex-col items-center">
+                <label for="fontPicker" class="text-gray-700 mb-2">Font Size</label>
+                <select id="fontPicker" class="form-control w-32">
+                    <option value="5">5px</option>
+                    <option value="10">10px</option>
+                    <option value="20">20px</option>
+                    <option value="30">30px</option>
+                    <option value="40">40px</option>
+                    <option value="50">50px</option>
+                </select>
+            </div>
+        </div>
+        <!-- Canvas for drawing signature -->
+        <div class="flex justify-center mb-6">
+            <canvas class="canvas" id="myCanvas" width="800" height="500"></canvas>
+        </div>
+        <!-- Buttons for clear, save & download, and retrieve actions -->
+        <div class="flex justify-around">
+            <button type="button" class="btn bg-red-500 text-white px-4 py-2 rounded" id="clearButton">Clear</button>
+            <button type="button" class="btn bg-green-500 text-white px-4 py-2 rounded" id="saveButton">Save & Download</button>
+            <button type="button" class="btn bg-yellow-500 text-white px-4 py-2 rounded" id="retrieveButton">Retrieve Signature</button>
+        </div>
+    </div>
+    <script>
+        // Get references to the DOM elements
+        const colorPicker = document.getElementById("colorPicker");
+        const canvasColor = document.getElementById("canvasColor");
+        const canvas = document.getElementById("myCanvas");
+        const clearButton = document.getElementById("clearButton");
+        const saveButton = document.getElementById("saveButton");
+        const fontPicker = document.getElementById("fontPicker");
+        const retrieveButton = document.getElementById('retrieveButton');
+        const ctx = canvas.getContext('2d');
+
+        // Set the drawing color based on color picker value
+        colorPicker.addEventListener('change', (e) => {
+            ctx.strokeStyle = e.target.value;
+            ctx.fillStyle = e.target.value;
+        });
+
+        // Initialize drawing state
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // Start drawing when mouse is pressed down
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            lastX = e.offsetX;
+            lastY = e.offsetY;
+        });
+
+        // Draw on the canvas when the mouse is moved
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing) {
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+                lastX = e.offsetX;
+                lastY = e.offsetY;
+            }
+        });
+
+        // Stop drawing when the mouse is released
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+        });
+
+        // Change the canvas background color based on picker value
+        canvasColor.addEventListener('change', (e) => {
+            ctx.fillStyle = e.target.value;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Change the stroke width based on font size picker value
+        fontPicker.addEventListener('change', (e) => {
+            ctx.lineWidth = e.target.value;
+        });
+
+        // Clear the canvas when the clear button is clicked
+        clearButton.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Save the canvas content to local storage and download it as an image
+        saveButton.addEventListener('click', () => {
+            localStorage.setItem('canvasContents', canvas.toDataURL());
+            let link = document.createElement('a');
+            link.download = 'my-canvas.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+
+        // Retrieve the saved canvas content from local storage
+        retrieveButton.addEventListener('click', () => {
+            let savedCanvas = localStorage.getItem('canvasContents');
+            if (savedCanvas) {
+                let img = new Image();
+                img.src = savedCanvas;
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0);
+                };
+            }
+        });
+    </script>
+</body>
+</html>
